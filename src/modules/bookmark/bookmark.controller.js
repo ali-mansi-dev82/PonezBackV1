@@ -1,12 +1,16 @@
-const { default: slugify } = require("slugify");
+const autoBind = require("auto-bind");
 const Service = require("./bookmark.service");
-const { isTrue, isEmpty } = require("../utils/functions");
 
 class BookmarkController {
+  #service;
+  constructor() {
+    autoBind(this);
+    this.#service = Service;
+  }
   async isBookmark(req, res, next) {
     try {
       const { id } = req.params;
-      const result = await Service.checkExistByPostId(id);
+      const result = await this.#service.checkExistByPostId(id);
       res.status(201).send(result ? true : false);
     } catch (error) {
       next(error);
@@ -15,12 +19,12 @@ class BookmarkController {
   async saveBookmark(req, res, next) {
     try {
       const { id } = req.params;
-      const bookmark = await Service.checkExist(res.user._id, id);
+      const bookmark = await this.#service.checkExist(res.user._id, id);
       if (bookmark.length > 0) {
-        Service.remove(res.user._id, id);
+        this.#service.remove(res.user._id, id);
         return res.status(201).send({ message: "deleted" });
       }
-      const result = await Service.save(res.user._id, id);
+      const result = await this.#service.save(res.user._id, id);
       if (result._id) {
         res.status(201).send({ message: "saved" });
       }
