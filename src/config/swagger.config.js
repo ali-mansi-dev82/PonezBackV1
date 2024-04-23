@@ -6,9 +6,9 @@ function swaggerConfig(app) {
         swaggerDefinition:{
             openapi: "3.0.1",
             info: {
-                title: "divar",
+                title: "ponez",
                 version: "1.0.0",
-                description: "divar nodejs app"
+                description: "ponez swagger docs"
             }
         },
         apis: [
