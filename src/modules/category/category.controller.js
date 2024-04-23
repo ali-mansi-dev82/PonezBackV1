@@ -1,11 +1,17 @@
 const { default: slugify } = require("slugify");
 const CategoryService = require("./category.service");
 const { isValidObjectId } = require("mongoose");
+const autoBind = require("auto-bind");
 
 class CategroyController {
+  #service;
+  constructor() {
+    autoBind(this);
+    this.#service = CategoryService;
+  }
   async find(req, res, next) {
     try {
-      const result = await CategoryService.find();
+      const result = await this.#service.find();
       res.status(result.statusCode ?? 201).send(result);
     } catch (error) {
       next(error);
@@ -14,7 +20,7 @@ class CategroyController {
   async create(req, res, next) {
     try {
       const { name, slug, icon, parent } = req.body;
-      const result = await CategoryService.create({
+      const result = await this.#service.create({
         name,
         slug: slugify(slug),
         icon,
@@ -28,7 +34,7 @@ class CategroyController {
   async update(req, res, next) {
     try {
       const { name, slug, icon, parent } = req.body;
-      const result = await CategoryService.update({
+      const result = await this.#service.update({
         name,
         slug: slugify(slug),
         icon,
@@ -44,7 +50,7 @@ class CategroyController {
       const { id } = req.params;
       if (!isValidObjectId(id))
         return res.send({ statusCode: 400, message: "id not valid" });
-      const result = await CategoryService.delete(id);
+      const result = await this.#service.delete(id);
       res.status(result.statusCode ?? 201).send(result);
     } catch (error) {
       next(error);
@@ -53,7 +59,7 @@ class CategroyController {
   async getBySlug(req, res, next) {
     try {
       const { slug } = req.params;
-      const result = await CategoryService.getBySlug(slug);
+      const result = await this.#service.getBySlug(slug);
       res.status(result.statusCode ?? 201).send(result);
     } catch (error) {
       next(error);
@@ -62,7 +68,7 @@ class CategroyController {
   async getByParentSlug(req, res, next) {
     try {
       const { slug } = req.params;
-      const result = await CategoryService.getByParentSlug(slug);
+      const result = await this.#service.getByParentSlug(slug);
       res.status(result.statusCode ?? 201).send(result);
     } catch (error) {
       next(error);
@@ -71,7 +77,7 @@ class CategroyController {
   async search(req, res, next) {
     try {
       const { q } = req.params;
-      const result = await CategoryService.search(q);
+      const result = await this.#service.search(q);
       res.status(result.statusCode ?? 201).send(result);
     } catch (error) {
       next(error);

@@ -3,8 +3,16 @@ const { isValidObjectId, Types } = require("mongoose");
 const { HttpError } = require("http-error");
 const OptionModel = require("../option/option.model");
 const { isEmpty } = require("../utils/functions");
+const autoBind = require("auto-bind");
 
 class CategoryService {
+  #model;
+  #optionmodel;
+  constructor() {
+    autoBind(this);
+    this.#model = CategoryModel;
+    this.#optionmodel = OptionModel;
+  }
   async create(categoryDto) {
     if (categoryDto?.parent && isValidObjectId(categoryDto?.parent)) {
       const existCategory = await this.checkExistById(categoryDto?.parent);
@@ -18,26 +26,26 @@ class CategoryService {
         ];
       }
     }
-    const category = await CategoryModel.create({ ...categoryDto });
+    const category = await this.#model.create({ ...categoryDto });
     return category;
   }
   async find() {
-    return await CategoryModel.find({ parent: null }).populate([
-      { path: "children" },
-    ]);
+    return await this.#model
+      .find({ parent: null })
+      .populate([{ path: "children" }]);
   }
   async checkExistById(id) {
-    const category = CategoryModel.findById(id);
+    const category = this.#model.findById(id);
     if (!category) throw new HttpError("Category not found");
     return category;
   }
   async checkExistBySlug(slug) {
-    const category = CategoryModel.findOne({ slug });
+    const category = this.#model.findOne({ slug });
     if (!category) throw new HttpError("Category not found");
     return category;
   }
   async alreadyExistBySlug(slug) {
-    const category = CategoryModel.findOne({ slug });
+    const category = this.#model.findOne({ slug });
     if (category) throw new HttpError("conflict");
     return category;
   }
@@ -50,18 +58,18 @@ class CategoryService {
       delete optionDto.parent;
     if (isEmpty(optionDto.parents)) delete optionDto.parents;
 
-    CategoryModel.updateOne({ _id: id }, optionDto);
+    this.#model.updateOne({ _id: id }, optionDto);
   }
   async delete(id) {
     const existCategory = await this.checkExistById(id);
-    const data = await CategoryModel.find({
+    const data = await this.#model.find({
       parents: id,
     });
     data.push(existCategory);
     await data.map(async (item) => {
       await this.checkExistById(item._id);
-      await OptionModel.deleteMany({ category: item._id }).then(() => {
-        CategoryModel.deleteOne({ _id: item._id });
+      await this.#optionmodel.deleteMany({ category: item._id }).then(() => {
+        this.#model.deleteOne({ _id: item._id });
       });
     });
 
@@ -73,7 +81,7 @@ class CategoryService {
 
   async getBySlug(slug) {
     if (isEmpty(slug) || slug === "root") {
-      return await CategoryModel.aggregate([
+      return await this.#model.aggregate([
         {
           $match: {
             parent: null,
@@ -81,7 +89,7 @@ class CategoryService {
         },
       ]);
     }
-    return await CategoryModel.aggregate([
+    return await this.#model.aggregate([
       {
         $match: {
           slug: slug,
@@ -91,28 +99,27 @@ class CategoryService {
   }
   async getChildrenBySlug(slug) {
     if (isEmpty(slug)) return { message: "slug is empty" };
-    const targetId = (await CategoryModel.findOne({ slug }))._id;
-    const categories = await CategoryModel.find({
+    const targetId = (await this.#model.findOne({ slug }))._id;
+    const categories = await this.#model.find({
       parents: { $in: [targetId] },
     });
     return [...categories, { _id: targetId }];
   }
   async getByParentSlug(slug) {
     if (isEmpty(slug) || slug === "root") {
-      return CategoryModel.find({ parent: null }, { parents: 0 }).populate([
-        "children",
-      ]);
+      return this.#model
+        .find({ parent: null }, { parents: 0 })
+        .populate(["children"]);
     }
 
-    const categoryTree = await CategoryModel.find(
-      { slug },
-      { parents: 0 }
-    ).populate(["children", "parent"]);
+    const categoryTree = await this.#model
+      .find({ slug }, { parents: 0 })
+      .populate(["children", "parent"]);
 
     if (categoryTree.length <= 0)
       return { statusCode: 404, message: "no message" };
     if (categoryTree[0]?.parent !== null) {
-      categoryTree[0].parent = await CategoryModel.findOne({
+      categoryTree[0].parent = await this.#model.findOne({
         _id: categoryTree[0]?.parent,
       });
     }
@@ -123,19 +130,18 @@ class CategoryService {
       const result = await this.find();
       return result;
     }
-    const categoryTree = await CategoryModel.find(
-      { name: { $regex: new RegExp(query, "i") } },
-      { parents: 0 }
-    ).populate(["children", "parent"]);
+    const categoryTree = await this.#model
+      .find({ name: { $regex: new RegExp(query, "i") } }, { parents: 0 })
+      .populate(["children", "parent"]);
 
     return categoryTree;
   }
   async allParents(slug) {
     const parents = [];
-    let category = await CategoryModel.findOne({ slug });
+    let category = await this.#model.findOne({ slug });
     parents.push(category);
     while (category?.parent) {
-      category = await CategoryModel.findOne({ _id: category.parent });
+      category = await this.#model.findOne({ _id: category.parent });
       parents.push(category);
     }
     return parents;
