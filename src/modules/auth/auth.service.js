@@ -1,22 +1,22 @@
-// const autoBind = require("auto-bind");
+const autoBind = require("auto-bind");
 const NodeEnv = require("../../common/constant/env.enum");
 const Model = require("../user/user.model");
 const { makeCode } = require("../utils/random");
 const { signToken } = require("./auth.utils");
 
 class AuthService {
-//   #model;
-//   constructor() {
-//     this.#model = Model;
-//     autoBind(this);
-//   }
+  #model;
+  constructor() {
+    this.#model = Model;
+    autoBind(this);
+  }
   async sendOTP(mobile) {
     try {
       const checkExistByMobile = await this.checkExistByMobile(mobile);
       if (checkExistByMobile) {
         return this.sendCode(mobile);
       } else {
-        await Model.create({
+        await this.#model.create({
           mobile,
           otp: {
             code: "000000",
@@ -33,7 +33,7 @@ class AuthService {
     }
   }
   async sendCode(mobile) {
-    const user = await Model.findOne({ mobile });
+    const user = await this.#model.findOne({ mobile });
     if (!user) return;
     const now = Date.now();
     if (user?.otp?.expiresIn > now)
@@ -60,7 +60,7 @@ class AuthService {
   async checkOTP(mobile, code, res) {
     try {
       const now = Date.now();
-      const user = await Model.findOne({ mobile });
+      const user = await this.#model.findOne({ mobile });
       if (user && typeof user === "object") {
         if (user.otp.code === code) {
           if (user?.otp?.expiresIn > now) {
@@ -102,7 +102,7 @@ class AuthService {
     }
   }
   async checkExistByMobile(mobile) {
-    const user = await Model.findOne({ mobile });
+    const user = await this.#model.findOne({ mobile });
     if (user === null) {
       return false;
     }
