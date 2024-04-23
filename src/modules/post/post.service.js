@@ -1,6 +1,9 @@
 const Model = require("./post.model");
-const { isValidObjectId } = require("mongoose");
+const { isValidObjectId, Types } = require("mongoose");
+const { HttpError } = require("http-error");
+const OptionModel = require("../option/option.model");
 const { isEmpty } = require("../utils/functions");
+const imageService = require("../image/image.service");
 
 class PostService {
   async create(data) {
@@ -10,6 +13,11 @@ class PostService {
       return { statusCode: 400, message: "category not valid" };
 
     const category = await Model.create({ ...data });
+
+    if (data?.images?.length && data?.images?.length > 0)
+      data?.images.map((value) => {
+        imageService.infinityUpdate(value); // inifinitive image
+      });
 
     return category;
   }
