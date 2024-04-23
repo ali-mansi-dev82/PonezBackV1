@@ -2,7 +2,10 @@ const { default: slugify } = require("slugify");
 const Service = require("./post.service");
 const { isValidObjectId } = require("mongoose");
 const { makeRandomeStr } = require("../utils/random");
+const categoryService = require("../category/category.service");
+const { extractIds } = require("../utils/extract");
 const { verifyToken } = require("../auth/auth.utils");
+const seenService = require("../seen/seen.service");
 
 class PostController {
   async find(req, res, next) {
@@ -11,6 +14,12 @@ class PostController {
       const query = {};
       if (city) query["city"] = city;
 
+      if (slug) {
+        const data = await categoryService.getChildrenBySlug(slug);
+        query["category"] = {
+          $in: data.map((value) => value._id),
+        };
+      }
       const result = await Service.find(query);
       res.status(result.statusCode ?? 201).send({ result });
     } catch (error) {
@@ -21,6 +30,7 @@ class PostController {
     try {
       const { slug } = req.params;
       const result = await Service.findbySlug(slug);
+      const parents = await categoryService.allParents(result.category.slug);
       const bread_crumb = parents.reverse();
       res.status(result.statusCode ?? 201).send({ data: result, bread_crumb });
       //seen post
@@ -29,6 +39,7 @@ class PostController {
       const [_, token] = authorization.split(" ");
       if (token && token !== "token" && verifyToken(token)) {
         const user = verifyToken(token);
+        seenService.save(user.id, result._id);
       }
     } catch (error) {
       next(error);
