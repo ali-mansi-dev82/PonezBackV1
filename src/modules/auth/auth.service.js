@@ -1,13 +1,13 @@
 const autoBind = require("auto-bind");
 const NodeEnv = require("../../common/constant/env.enum");
-const Model = require("../user/user.model");
+const userModel = require("../user/user.model");
 const { makeCode } = require("../utils/random");
 const { signToken } = require("./auth.utils");
 
 class AuthService {
   #model;
   constructor() {
-    this.#model = Model;
+    this.#model = userModel;
     autoBind(this);
   }
   async sendOTP(mobile) {
