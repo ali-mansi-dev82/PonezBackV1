@@ -7,7 +7,7 @@ const { ImageRouter } = require("./image/image.routes");
 const { OptionRouter } = require("./option/option.routes");
 const { StateRouter } = require("./modules/state/state.routes");
 const { CityRouter } = require("./modules/city/city.routes");
-
+const { BookmarkRouter } = require("./modules/bookmark/bookmark.routes");
 
 const router = Router();
 
@@ -19,6 +19,7 @@ router.use("/image", ImageRouter);
 router.use("/option", OptionRouter);
 router.use("/state", StateRouter);
 router.use("/city", CityRouter);
+router.use("/bookmark", BookmarkRouter);
 
 module.exports = {
   MainRouters: router,
