@@ -1,4 +1,5 @@
 const express = require("express");
+const swaggerConfig = require("./src/config/swagger.config");
 const { MainRouters } = require("./src/modules/app.routes");
 const notFoundError = require("./src/common/exception/notFound.handler");
 const errorHandler = require("./src/common/exception/allError.handler");
@@ -11,9 +12,10 @@ async function app() {
   app.use(express.urlencoded({ extended: true }));
   app.use(cors());
   app.use(express.json());
+  app.use(deleteExpiredImage, MainRouters);
+  swaggerConfig(app);
   app.use(notFoundError);
   app.use(errorHandler);
-  app.use(deleteExpiredImage, MainRouters);
   require("./src/config/mongoose.config");
   app.listen(process.env.PORT, () => {
     console.log(`server run in port ${process.env.PORT}`);
