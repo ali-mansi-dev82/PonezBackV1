@@ -22,5 +22,15 @@ class NoteController {
       next(error);
     }
   }
+  async delete(req, res, next) {
+    try {
+      const { id } = req.params;
+      // if (res?.user?._id !== id) return res.status(401).send({message:'you cant delete another notes'});
+      const result = await Service.remove(id);
+      return res.status(201).send(result);
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 module.exports = new NoteController();

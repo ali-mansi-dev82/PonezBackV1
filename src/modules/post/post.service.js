@@ -1,14 +1,13 @@
 const Model = require("./post.model");
-const { isValidObjectId, Types } = require("mongoose");
+const { isValidObjectId } = require("mongoose");
 const { HttpError } = require("http-error");
-const OptionModel = require("../option/option.model");
 const { isEmpty } = require("../utils/functions");
 const imageService = require("../image/image.service");
 
 class PostService {
   async create(data) {
     if (!data?.title || isEmpty(data?.title))
-      return { statusCode: 400, message: "category not valid" };
+      return { statusCode: 400, message: "title not valid" };
     if (!data?.category || !isValidObjectId(data?.category))
       return { statusCode: 400, message: "category not valid" };
 
@@ -50,16 +49,17 @@ class PostService {
     if (category) throw new HttpError("conflict");
     return category;
   }
-  async update(id, optionDto) {
-    await this.checkExistById(id);
-    if (isEmpty(optionDto.name)) delete optionDto.name;
-    if (isEmpty(optionDto.slug)) delete optionDto.slug;
-    if (isEmpty(optionDto.icon)) delete optionDto.icon;
-    if (isEmpty(optionDto.parent) || isValidObjectId(optionDto.parent))
-      delete optionDto.parent;
-    if (isEmpty(optionDto.parents)) delete optionDto.parents;
+  async update(id, data) {
+    const reslut = await Model.updateOne({ _id: id }, data);
 
-    Model.updateOne();
+    if (data?.images?.length && data?.images?.length > 0)
+      data?.images.map((value) => {
+        imageService.infinityUpdate(value); // inifinitive image
+      });
+
+    return reslut.modifiedCount > 0
+      ? { message: "update successfuuly" }
+      : { message: "update failed" };
   }
   async delete(id) {
     const data = await Model.updateOne(

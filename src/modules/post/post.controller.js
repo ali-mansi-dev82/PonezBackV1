@@ -1,13 +1,12 @@
-const { default: slugify } = require("slugify");
 const Service = require("./post.service");
 const { isValidObjectId } = require("mongoose");
 const { makeRandomeStr } = require("../utils/random");
 const categoryService = require("../category/category.service");
-const { extractIds } = require("../utils/extract");
 const { verifyToken } = require("../auth/auth.utils");
 const seenService = require("../seen/seen.service");
+const Controller = require("../../common/base/controller");
 
-class PostController {
+class PostController extends Controller {
   async find(req, res, next) {
     try {
       const { city, slug } = req.body;
@@ -80,14 +79,36 @@ class PostController {
   }
   async update(req, res, next) {
     try {
-      const { name, slug, icon, parent } = req.body;
-      const result = await Service.update({
-        name,
-        slug: slugify(slug),
-        icon,
-        parent: parent !== "" ? parent : null,
+      const { id } = req.params;
+      const post = await Service.checkExistById(id);
+      // console.log(res?.user?._id, post.user, res?.user?._id === post.user);
+      // if (res?.user?._id !== post.user)
+      //   return res
+      //     .status(401)
+      //     .send({ message: "you cant delete another notes" });
+      const {
+        title,
+        images,
+        province,
+        content,
+        city,
+        district,
+        cordinate,
+        amount,
+        options,
+      } = req.body;
+      const result = await Service.update(id, {
+        title,
+        images,
+        province,
+        content,
+        city,
+        district,
+        cordinate,
+        amount,
+        options,
       });
-      res.status(result.statusCode ?? 201).send(result);
+      res.status(201).send(result);
     } catch (error) {
       next(error);
     }
