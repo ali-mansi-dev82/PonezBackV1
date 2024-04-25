@@ -3,8 +3,12 @@ const { default: slugify } = require("slugify");
 const Service = require("./option.service");
 const CategoryService = require("../category/category.service");
 const { isTrue, isEmpty } = require("../utils/functions");
+const autoBind = require("auto-bind");
 
 class OptionController {
+  constructor() {
+    autoBind(this);
+  }
   async create(req, res, next) {
     try {
       const {
@@ -33,9 +37,8 @@ class OptionController {
   async findByCategoryId(req, res, next) {
     try {
       const { categoryId } = req.params;
-      console.log(req.params);
-      const result = await Service.findByCategoryId(categoryId);
-      res.status(result.statusCode ?? 201).send(result);
+      const category = await CategoryService.checkExistById(categoryId);
+      this.findByCategorySlug({ params: { slug: category.slug } }, res, next);
     } catch (error) {
       next(error);
     }

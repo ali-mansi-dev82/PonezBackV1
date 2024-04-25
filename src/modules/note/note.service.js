@@ -24,10 +24,9 @@ class NoteService {
     });
     return data;
   }
-  async remove(user, post) {
+  async remove(id) {
     const data = await this.#model.deleteOne({
-      user,
-      post,
+      _id: id,
     });
     return data;
   }
@@ -37,9 +36,9 @@ class NoteService {
     return result;
   }
   async myNotes(user) {
-    return await this.#model.find({ user }, {}, { sort: { _id: -1 } }).populate(
-      "post"
-    );
+    return await this.#model
+      .find({ user }, {}, { sort: { _id: -1 } })
+      .populate("post");
   }
 }
 module.exports = new NoteService();
