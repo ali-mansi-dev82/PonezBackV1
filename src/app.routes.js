@@ -9,6 +9,7 @@ const { StateRouter } = require("./modules/state/state.routes");
 const { CityRouter } = require("./modules/city/city.routes");
 const { BookmarkRouter } = require("./modules/bookmark/bookmark.routes");
 const { NoteRouter } = require("./modules/note/note.routes");
+const { SpecialRouter } = require("./modules/specials/specials.routes");
 
 const router = Router();
 
@@ -22,6 +23,7 @@ router.use("/state", StateRouter);
 router.use("/city", CityRouter);
 router.use("/bookmark", BookmarkRouter);
 router.use("/note", NoteRouter);
+router.use("/special", SpecialRouter);
 
 module.exports = {
   MainRouters: router,
