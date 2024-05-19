@@ -4,6 +4,7 @@ const Authorization = require("../../common/guard/authorization.guard");
 
 const router = Router();
 router.get("/", Controller.find);
+router.get("/my", Authorization, Controller.myPost);
 router.post("/create", Authorization, Controller.create);
 router.delete("/delete/:postId", Authorization, Controller.deleteById);
 

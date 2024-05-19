@@ -15,6 +15,16 @@ class SpecialController {
       next(error);
     }
   }
+  async myPost(req, res, next) {
+    try {
+      const result = await this.#service.findMany({
+        user: res.user._id,
+      });
+      res.status(result.statusCode ?? 201).send(result);
+    } catch (error) {
+      next(error);
+    }
+  }
   async create(req, res, next) {
     try {
       const { postId } = req.body;
