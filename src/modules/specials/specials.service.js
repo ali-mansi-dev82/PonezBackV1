@@ -15,6 +15,9 @@ class SpecialService {
   async find() {
     return await this.#model.find().populate([{ path: "post" }]);
   }
+  async findMany(data) {
+    return await this.#model.find(data);
+  }
   async delete(postId) {
     await this.checkExist({ post: postId });
     return await this.#model.deleteOne({ post: postId });
