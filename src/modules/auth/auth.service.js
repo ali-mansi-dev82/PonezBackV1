@@ -72,9 +72,9 @@ class AuthService {
               httpOnly: true,
               secure: process.env.NODE_ENV === NodeEnv,
             });
-
             return {
               token,
+              user: { id: user?._id, mobile: user.mobile },
               statusCode: 200,
               message: "login successful",
             };

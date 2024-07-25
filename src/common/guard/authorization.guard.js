@@ -44,7 +44,7 @@ const Authorization = async (req, res, next) => {
           message: "your token not valid!",
         });
       }
-      res.user = { ...user, accessToken: '' };
+      res.user = user;
       return next();
     }
     return res.status(401).send({
